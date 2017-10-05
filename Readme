@@ -48,18 +48,3 @@ Pour les images, nous avons choisi d'utiliser le format ppm car il n'utilise
 aucune compression et est donc plus facile à utiliser.
 
 
-Problèmes rencontrés :
-Nous avions pensé à utiliser des processus fils pour gérer le parallélisme avec
-fork mais il y avait des incompatibilités avec Graphics. Sinon la fonction doco
-aurait été la suivante :
-let doco l () =
-  let aux p =
-      let id = Unix.fork() in
-      (match id with
-        |0 -> run p;
-              exit 0
-        | _ -> id)
-    in
-    List.iter
-       (fun i -> try (let _ = Unix.waitpid [] i in ()) with _ -> ())
-       (List.map aux l)
