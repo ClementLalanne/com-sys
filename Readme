@@ -1,0 +1,65 @@
+(******************************************************************************)
+(*                                                                            *)
+(*                           Réseaux de Kahn                                  *)
+(*                 Dang-Nhu Hector  - Lalanne Clément                         *)
+(*                  Application : Picture in picture                          *)
+(*                                                                            *)
+(******************************************************************************)
+
+Descriptif de fichiers :
+  - .merlin est un fichier permettant à merlin de fonctionner
+  - kahn.ml est le fichier contenant les trois implémentations des réseaux de
+Kahn.
+  - main.ml contient le programme principal.
+  - entiers.ml contient l'exemple donné qui énumère les entiers à l'écran.
+  - picture_in_picture contient une implémentation de picture in picture.
+  - images.ml contient des fonctions nécessaires à picture in picture pour le
+traitement d'images.
+  - Vid1 est un dossier contenant les images de la première video.
+  - Vid2 est un dossier contenant les images de la deuxième video.
+  - Makefile permet d'automatiser la compilation.
+
+Compilation et exécution :
+La comande "Make" compile les fichiers et "Make clean" efface tous les fichiers
+créés par la comande précédente.
+Pour exécuter le programme il faut taper la comande "./a.out -a -b" où -a vaut
+"Entiers" ou "PictureInPicture" et -b vaut "Sequencial", "Unix" ou "Socket".
+Par exemple "./a.out Entiers Unix" énumèrera les entiers en utilisant des
+processus communiquant par des pipes Unix. De plus la comande
+"Make cleansockets" efface tous les sockets qui ont été créés et doit être
+utilisée avant toute utilisation des sockets.
+
+Les trois implémentations :
+  -Implémentation séquencielle : Le type des processus est celui conseillé dans
+l'énnoncé c'est à dire ('a -> Unit) -> Unit et doit s'interpréter comme
+une fonction prennant en argument sa continuation. La séquencialité est gérée
+par une file de priorité.
+  -Implémentation via Unix : Nous utilisons des pipes Unix et le parallélisme
+est géré par des threads.
+  -Implémentation via des sockets : Nous utilisons des sockets Unix et le
+parallélisme est géré comme précédemment.
+
+Picture in picture :
+Nous avons deux processus qui envoient chacun une vidéo qui représentent deux
+chaînes de télévision et un troisième qui reçoit ces vidéos et les fusionnent
+pour les afficher à l'écran qui lui représente une télévision. Ici pour alléger
+l'envoi les videos ne sont constituées que de deux images.
+Pour les images, nous avons choisi d'utiliser le format ppm car il n'utilise
+aucune compression et est donc plus facile à utiliser.
+
+
+Problèmes rencontrés :
+Nous avions pensé à utiliser des processus fils pour gérer le parallélisme avec
+fork mais il y avait des incompatibilités avec Graphics. Sinon la fonction doco
+aurait été la suivante :
+let doco l () =
+  let aux p =
+      let id = Unix.fork() in
+      (match id with
+        |0 -> run p;
+              exit 0
+        | _ -> id)
+    in
+    List.iter
+       (fun i -> try (let _ = Unix.waitpid [] i in ()) with _ -> ())
+       (List.map aux l)
